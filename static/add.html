@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TO DO LIST</title>
+<style>
+h1 {
+	display: inline-block;
+	width: 100%;
+	color: white;
+	background: pink;
+	text-align: center;
+}
+input[type=date] {
+  	width: 55%;
+  	padding: 12px 20px;
+	font-size: 12px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+  	outline: none;
+	color: grey;
+}
+
+input[type=date]:hover {
+        color: MediumVioletRed;
+}
+
+.input-one {
+  	width: 55%;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+  	outline: none;
+}
+.input-one::placeholder {
+	font-size: 20px;
+	text-align: left;
+	color: grey;
+}
+.input-one:hover::placeholder {
+        color: MediumVioletRed;
+}
+.input-two {
+  	width: 50%;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+  	outline: none;
+}
+.input-two::placeholder {
+	font-size: 20px;
+	text-align: left;
+	color: grey;
+}
+.input-two:hover::placeholder {
+        color: MediumVioletRed;
+}
+body {
+	text-align: center;
+}
+.button {
+  	width: 5%;
+	background-color: hotpink;
+  	border: none;
+  	color: white;
+  	text-align: center;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+}
+.button:hover {
+	background-color: MediumVioletRed;
+	border: 3px solid MediumVioletRed;
+  	cursor: pointer;
+}
+.submitAllButton {
+  	width: 8%;
+	background-color: hotpink;
+  	border: none;
+  	color: white;
+  	text-align: center;
+  	cursor: pointer;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+}
+.submitAllButton:hover {
+	background-color: MediumVioletRed;
+	border: 3px solid MediumVioletRed;
+}
+.delete-button {
+    margin-left: 10px;
+    color: grey;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.delete-button:hover {
+	color: black;
+}
+ul {
+	list-style-type: 10085;
+        padding: 0;
+}
+li {
+        width: 55%;
+	display: inline-flex;
+        justify-content: space-between;
+        align-items: center; 
+	background: pink;
+	border: none;
+	text-align: left;
+	box-sizing: border-box;
+	border: 3px solid pink;
+	color: black;
+	font-size: 20px;
+	position: relative; /* Required for positioning the pseudo-element */
+    	padding-left: 25px;
+}
+li::before {
+    content: "❤";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 20px;
+    line-height: 20px;
+}
+</style>
+</head>
+<body>
+	<div>
+	<h1>ADD TASKS INTO TO DO LIST</h1>
+
+	<label for="AddName"></label>
+  	<input type="text" class="input-one" id="AddName" placeholder="Type Your Name..." name="AddName"><br><br>
+
+	<label for="AddDate"></label>
+	<input type="date" id="AddDate" name="AddDate"><br><br>
+
+	<label for="AddElement"></label>
+  	<input type="text" class="input-two" id="AddElement" placeholder="Type Here..." name="AddElement">
+
+	<button type="button" class="button" id="addButton">Add</button>
+	
+	<ul id="taskList"></ul>
+
+	<label for="submitAllButton"></label>
+	<button type="button" class="submitAllButton" id="submitAllButton">Submit</button>
+	</div>
+
+<script>
+	const nameInput = document.getElementById('AddName');
+        const dateInput = document.getElementById('AddDate');
+        const elementInput = document.getElementById('AddElement');
+        const taskList = document.getElementById('taskList');
+
+document.getElementById('addButton').addEventListener('click', function() {
+        const nameValue = nameInput.value.trim();
+        const dateValue = dateInput.value;
+        const taskText = elementInput.value.trim();
+    	
+	if (nameValue && dateValue && taskText) {
+	const listItem = document.createElement('li');
+        listItem.textContent = taskText;
+
+	//click event, get listitem and remove
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.classList.add('delete-button');
+
+	// Click event for the delete button
+        deleteButton.addEventListener('click', function() {
+        listItem.remove(); // Remove the list item from the DOM
+            });
+
+	// Append the delete button to the list item
+        listItem.appendChild(deleteButton);
+	taskList.appendChild(listItem);
+
+	// Clear the input field
+        elementInput.value = '';
+}
+else {
+    	alert("Please enter both your name and a task.");
+}
+        });
+
+//submit button
+	document.getElementById('submitAllButton').addEventListener('click', function() {
+            const nameValue = nameInput.value.trim();
+            const dateValue = dateInput.value;
+	    const tasks = Array.from(document.querySelectorAll('#taskList li')).map(li => li.firstChild.textContent);
+
+            if (nameValue && dateValue && tasks.length > 0) {
+        fetch('http://localhost:8080/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: nameValue, date: dateValue, tasks })
+        })
+        .then(response => {
+            return response.text();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            // Clear the task list and inputs
+            taskList.innerHTML = '';
+            nameInput.value = '';
+            dateInput.value = '';
+        })
+    }
+});
+
+</script>
+</body>
+</html>

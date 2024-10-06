@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TO DO LIST</title>
+<style>
+h1 {
+	display: inline-block;
+	width: 100%;
+	color: white;
+	background: pink;
+	text-align: center;
+}
+.button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+.button {
+  	width: 8%;
+	background-color: hotpink;
+  	border: none;
+  	color: white;
+  	text-align: center;
+  	cursor: pointer;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+	text-decoration: none;
+}
+.button:hover {
+	background-color: MediumVioletRed;
+	border: 3px solid MediumVioletRed;
+	cursor: pointer;
+}
+</style>
+</head>
+<body>
+	<div><h1>MY TO DO LIST</h1></div>
+
+	<div class="button-container">
+        <a href="add.html" class="button">Add Task</a>
+        <a href="fetch.html" class="button">Fetch Tasks</a>
+	<a href="delete.html" class="button">Delete Task</a>
+        <a href="update.html" class="button">Update Tasks</a>
+    </div>
+
+</body>
+</html>

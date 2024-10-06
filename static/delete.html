@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TO DO LIST</title>
+<style>
+h1 {
+	display: inline-block;
+	width: 100%;
+	color: white;
+	background: pink;
+	text-align: center;
+}
+.fetchName {
+  	width: 55%;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+  	outline: none;
+}
+.fetchName::placeholder {
+	font-size: 20px;
+	text-align: left;
+	color: grey;
+}
+.fetchName:hover::placeholder {
+        color: MediumVioletRed;
+}
+.fetchDate {
+  	width: 45%;
+  	padding: 12px 20px;
+	font-size: 12px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+  	outline: none;
+	color: grey;
+}
+
+.fetchDate:hover {
+        color: MediumVioletRed;
+}
+
+body {
+	text-align: center;
+}
+
+.fetchButton {
+  	width: 10%;
+	background-color: hotpink;
+  	color: white;
+  	text-align: center;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+}
+.fetchButton:hover {
+	background-color: MediumVioletRed;
+	border: 3px solid MediumVioletRed;
+  	cursor: pointer;
+}
+.deleteButton {
+  	width: 10%;
+	background-color: hotpink;
+  	color: white;
+  	text-align: center;
+  	padding: 12px 20px;
+  	box-sizing: border-box;
+  	border: 3px solid hotpink;
+}
+.deleteButton:hover {
+	background-color: MediumVioletRed;
+	border: 3px solid MediumVioletRed;
+  	cursor: pointer;
+}
+.task-item {
+        width: 55%;
+	display: inline-flex;
+        justify-content: space-between;
+        align-items: center; 
+	background: pink;
+	border: none;
+	text-align: left;
+	box-sizing: border-box;
+	border: 3px solid pink;
+	color: black;
+	font-size: 20px;
+	position: relative; /* Required for positioning the pseudo-element */
+    	padding-left: 25px;
+}
+.task-item::before {
+    content: "❤";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 20px;
+    line-height: 20px;
+}
+
+</style>
+</head>
+<body>
+	
+	<h1>DELETE TASKS FROM TO DO LIST</h1>
+
+	<label for="fetchName"></label>
+	<input type="text" class="fetchName" id="fetchName" placeholder="Your Name..."><br><br>
+
+	<label for="fetchDate"></label>
+        <input type="date" class="fetchDate" id="fetchDate">
+
+        <button type="button" class="fetchButton" id="fetchButton">Fetch Tasks</button>
+
+        <ul id="taskList"></ul>
+
+	<button type="button" class="deleteButton" id="deleteButton">Delete Tasks</button>
+	
+</body>
+<script>
+	let selectedTask = null;
+
+	document.getElementById('fetchButton').addEventListener('click', () => {
+        const name = document.getElementById('fetchName').value.trim();
+        const date = document.getElementById('fetchDate').value.trim();
+
+	if (!name || !date) {
+				alert("Please enter both name and date.");
+				return;
+			}
+
+        fetch(`http://localhost:8080/fetch?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`)
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    	const resultsDiv = document.getElementById('taskList');
+        		resultsDiv.innerHTML = ''; // Clear previous results
+
+        data.forEach(task => {
+            const listItem = document.createElement('li');
+            listItem.textContent = task;
+            listItem.classList.add('task-item');
+            listItem.addEventListener('click', () => {
+                selectedTask = task; // Store the selected task
+            });
+            resultsDiv.appendChild(listItem);
+        });
+     })
+	.catch(error => {
+            console.error('Error fetching tasks:', error);
+         });
+     });
+
+	document.getElementById('deleteButton').addEventListener('click', function() {
+
+        const name = document.getElementById('fetchName').value.trim();
+        const date = document.getElementById('fetchDate').value.trim();
+
+        fetch(`http://localhost:8080/delete?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+		alert('Task deleted successfully!');
+		document.getElementById('fetchName').value = '';
+            	document.getElementById('fetchDate').value = '';
+            	document.getElementById('taskList').innerHTML = '';
+            }
+        })
+
+});
+</script>
+</body>
+</html>
