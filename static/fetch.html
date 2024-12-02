@@ -98,30 +98,49 @@ body {
         <button type="button" class="fetchButton" id="fetchButton">Fetch Tasks</button>
 
         <ul id="taskList"></ul>
-	
-</body>
+
 <script>
 	document.getElementById('fetchButton').addEventListener('click', function() {
         const name = document.getElementById('fetchName').value.trim();
         const date = document.getElementById('fetchDate').value.trim();
 
         fetch(`http://localhost:8080/fetch?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`)
-                .then(response => {
-                    return response.json();
-                })
-                .then(data => {
-                    	const resultsDiv = document.getElementById('taskList');
-        		resultsDiv.innerHTML = ''; // Clear previous results
-
-        data.forEach(task => {
-                        const listItem = document.createElement('li');
+				.then(response => {
+				if (!response.ok) { // Check for a successful response
+					throw new Error('Network response was not ok');
+				}
+				
+				// Check if the response is JSON
+            const contentType = response.headers.get("Content-Type");
+            if (contentType && contentType.includes("application/json")) {
+                return response.json(); // Automatically parse JSON if content type is JSON
+            } else {
+				return response.text().then(text => {
+					console.error('Unexpected response content:', text);
+					throw new Error('Expected JSON but received: ' + text);
+				});
+			}
+        })
+        .then(data => {
+            //console.log(data); // Check the parsed JSON
+            const resultsDiv = document.getElementById('taskList');
+            resultsDiv.innerHTML = ''; // Clear previous results
+        
+		if (Array.isArray(data)) {
+			data.forEach(task => {
+                const listItem = document.createElement('li');
         		listItem.textContent = task;
-
-	listItem.classList.add('task-item');
-
-        resultsDiv.appendChild(listItem);
+				listItem.classList.add('task-item');
+				resultsDiv.appendChild(listItem);
                 });
-            })
+			} else {
+                console.error('Expected an array but got:', data);
+            }
+
+		})
+			.catch(error => {
+				console.error('Fetch error:', error); // Log the error for debugging
+			});
 });
 </script>
 </body>

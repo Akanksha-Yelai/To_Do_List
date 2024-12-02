@@ -25,76 +25,103 @@ func main() {
 
     db, err := sql.Open("postgres", getConnectionString())
     if err != nil {
-        log.Fatal(err)
+        log.Fatal("Error connecting to the database:",err)
     }
     defer db.Close()
+	
+	err = db.Ping()  // Check if the connection to the database works
+	if err != nil {
+		log.Fatal("Database connection failed:", err)
+	} else {
+		log.Println("Successfully connected to the database.")
+	}
+	
+	// Serve the to_do.html page at the root path (/)
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        // Serve the to_do.html page as the landing page
+        http.ServeFile(w, r, "./static/to_do.html")
+    })
+
+    // Serve static files (e.g., CSS, JS) from the /static/ route
+    http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+
 
     http.HandleFunc("/add", func(w http.ResponseWriter, r *http.Request) {
-
         // CORS headers
         w.Header().Set("Access-Control-Allow-Origin", "*")
         w.Header().Set("Access-Control-Allow-Methods", "POST")
         w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	if r.Method == http.MethodOptions {
-        	w.WriteHeader(http.StatusNoContent)
-        	return
-    }
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 
         if r.Method == http.MethodPost {
             var task Task
             err := json.NewDecoder(r.Body).Decode(&task)
             defer r.Body.Close()
-	    if err != nil {
-                http.Error(w, err.Error(), http.StatusBadRequest)
-                return
-            }
+
+		// Check if decoding the body failed
+			if err != nil {
+				http.Error(w, "Invalid request body", http.StatusBadRequest)
+				return
+			}
 
 	    // Log received task for debugging
         log.Printf("Received task: %+v\n", task)
 
-	subtasksStr := strings.Join(task.Tasks, ",")
+		subtasksStr := strings.Join(task.Tasks, ",")
 
             // Insert the main task along with subtasks as a string
             _, err = db.Exec("INSERT INTO tasks (name, date, task) VALUES ($1, $2, $3)",
                 task.Name, task.Date, subtasksStr)
-            if err != nil {
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-            }
-
-            w.WriteHeader(http.StatusCreated)
-            json.NewEncoder(w).Encode(task)
-        } else {
-            http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			
+			// Check if there was an error during insertion
+			if err != nil {
+				log.Printf("Error inserting task: %v", err)
+				http.Error(w, "Failed to insert task", http.StatusInternalServerError)
+				return
+			}
+			
+			// Return the task with a 200 OK status after insertion
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(task)
+            
         }
     })
 
 // Handler for fetching tasks
     http.HandleFunc("/fetch", func(w http.ResponseWriter, r *http.Request) {
-        // CORS headers
+		
+		// CORS headers
         w.Header().Set("Access-Control-Allow-Origin", "*")
         w.Header().Set("Access-Control-Allow-Methods", "GET")
         w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-        if r.Method == http.MethodOptions {
-            w.WriteHeader(http.StatusNoContent)
-            return
-        }
+		// Handling OPTIONS request separately
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 
         if r.Method == http.MethodGet {
             name := r.URL.Query().Get("name")
             date := r.URL.Query().Get("date")
 
+			// Log query parameters for debugging
+			log.Printf("Fetching tasks for name: %s, date: %s\n", name, date)
+
             if name == "" || date == "" {
-                http.Error(w, "Missing name or date", http.StatusBadRequest)
-                return
-            }
+				http.Error(w, "Missing name or date", http.StatusBadRequest)
+				return
+			}
 
             rows, err := db.Query("SELECT task FROM tasks WHERE name = $1 AND date = $2", name, date)
         if err != nil {
-           http.Error(w, err.Error(), http.StatusInternalServerError)
-           return
+			log.Println("Error executing query:", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
             }
             defer rows.Close()
 
@@ -129,7 +156,8 @@ func main() {
 
 //handler to delete
 http.HandleFunc("/delete", func(w http.ResponseWriter, r *http.Request) {
-    // CORS headers
+	
+	// CORS headers
     w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Methods", "DELETE")
     w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -167,7 +195,8 @@ http.HandleFunc("/delete", func(w http.ResponseWriter, r *http.Request) {
 
 // Handler for updating tasks
 http.HandleFunc("/update", func(w http.ResponseWriter, r *http.Request) {
-    // CORS headers
+	
+	// CORS headers
     w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Methods", "PUT")
     w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -181,7 +210,8 @@ http.HandleFunc("/update", func(w http.ResponseWriter, r *http.Request) {
         var task Task
         err := json.NewDecoder(r.Body).Decode(&task)
         defer r.Body.Close()
-        if err != nil {
+        
+		if err != nil {
             http.Error(w, err.Error(), http.StatusBadRequest)
             return
         }
@@ -198,15 +228,14 @@ http.HandleFunc("/update", func(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        w.WriteHeader(http.StatusOK)
-        json.NewEncoder(w).Encode(task)
-    } else {
+        w.Header().Set("Content-Type", "application/json")
+        } else {
         http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
     }
 })
 
-	log.Println("Server started at :8080")
-    	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server started at http://localhost:8080")
+    	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 }
 
 func getConnectionString() string {

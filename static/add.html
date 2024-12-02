@@ -161,7 +161,7 @@ document.getElementById('addButton').addEventListener('click', function() {
         const taskText = elementInput.value.trim();
     	
 	if (nameValue && dateValue && taskText) {
-	const listItem = document.createElement('li');
+		const listItem = document.createElement('li');
         listItem.textContent = taskText;
 
 	//click event, get listitem and remove
@@ -176,7 +176,7 @@ document.getElementById('addButton').addEventListener('click', function() {
 
 	// Append the delete button to the list item
         listItem.appendChild(deleteButton);
-	taskList.appendChild(listItem);
+		taskList.appendChild(listItem);
 
 	// Clear the input field
         elementInput.value = '';
@@ -190,7 +190,7 @@ else {
 	document.getElementById('submitAllButton').addEventListener('click', function() {
             const nameValue = nameInput.value.trim();
             const dateValue = dateInput.value;
-	    const tasks = Array.from(document.querySelectorAll('#taskList li')).map(li => li.firstChild.textContent);
+			const tasks = Array.from(document.querySelectorAll('#taskList li')).map(li => li.firstChild.textContent);
 
             if (nameValue && dateValue && tasks.length > 0) {
         fetch('http://localhost:8080/add', {
@@ -201,6 +201,9 @@ else {
             body: JSON.stringify({ name: nameValue, date: dateValue, tasks })
         })
         .then(response => {
+				if (!response.ok) {
+					throw new Error('Failed to save tasks');
+            }
             return response.text();
         })
         .then(data => {
@@ -210,6 +213,12 @@ else {
             nameInput.value = '';
             dateInput.value = '';
         })
+		.catch(error => {
+            console.error('Error:', error);
+            alert('There was an error submitting the tasks.');
+        });
+    } else {
+        alert('Please fill in all fields and tasks.');
     }
 });
 

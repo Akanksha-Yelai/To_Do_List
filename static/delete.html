@@ -114,8 +114,7 @@ body {
         <ul id="taskList"></ul>
 
 	<button type="button" class="deleteButton" id="deleteButton">Delete Tasks</button>
-	
-</body>
+
 <script>
 	let selectedTask = null;
 
@@ -129,20 +128,16 @@ body {
 			}
 
         fetch(`http://localhost:8080/fetch?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`)
-                .then(response => {
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    	const resultsDiv = document.getElementById('taskList');
-        		resultsDiv.innerHTML = ''; // Clear previous results
+                    const resultsDiv = document.getElementById('taskList');
+					resultsDiv.innerHTML = ''; // Clear previous results
 
         data.forEach(task => {
+			// Display task in the list
             const listItem = document.createElement('li');
             listItem.textContent = task;
             listItem.classList.add('task-item');
-            listItem.addEventListener('click', () => {
-                selectedTask = task; // Store the selected task
-            });
             resultsDiv.appendChild(listItem);
         });
      })
@@ -152,22 +147,23 @@ body {
      });
 
 	document.getElementById('deleteButton').addEventListener('click', function() {
+			const name = document.getElementById('fetchName').value.trim();
+			const date = document.getElementById('fetchDate').value.trim();
 
-        const name = document.getElementById('fetchName').value.trim();
-        const date = document.getElementById('fetchDate').value.trim();
-
-        fetch(`http://localhost:8080/delete?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`, {
-            method: 'DELETE',
-        })
-        .then(response => {
-            if (response.ok) {
-		alert('Task deleted successfully!');
-		document.getElementById('fetchName').value = '';
-            	document.getElementById('fetchDate').value = '';
-            	document.getElementById('taskList').innerHTML = '';
+			fetch(`http://localhost:8080/delete?name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}`, {
+				method: 'DELETE',
+			})
+			.then(response => {
+				if (response.ok) {
+					alert('Task deleted successfully!');
+					document.getElementById('fetchName').value = '';
+					document.getElementById('fetchDate').value = '';
+					document.getElementById('taskList').innerHTML = '';
             }
         })
-
+		.catch(error => {
+            console.error('Error deleting task:', error);
+        });
 });
 </script>
 </body>
