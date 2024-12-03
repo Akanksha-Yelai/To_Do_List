@@ -109,17 +109,7 @@ body {
 				if (!response.ok) { // Check for a successful response
 					throw new Error('Network response was not ok');
 				}
-				
-				// Check if the response is JSON
-            const contentType = response.headers.get("Content-Type");
-            if (contentType && contentType.includes("application/json")) {
-                return response.json(); // Automatically parse JSON if content type is JSON
-            } else {
-				return response.text().then(text => {
-					console.error('Unexpected response content:', text);
-					throw new Error('Expected JSON but received: ' + text);
-				});
-			}
+				return response.json();
         })
         .then(data => {
             //console.log(data); // Check the parsed JSON
