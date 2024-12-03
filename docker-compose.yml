@@ -8,6 +8,6 @@ services:
     depends_on:
       - db
 
-  db:
+  db: #no need to write this
     ports:
       - "5432:5432"
