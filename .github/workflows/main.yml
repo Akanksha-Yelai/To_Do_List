@@ -35,6 +35,8 @@ jobs:
       - name: Run Go application
         env:
           DB_HOST: 'localhost'
+          DB_PORT: 5432
+          DB_USER: postgres
           DB_NAME: 'mydatabase'
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
