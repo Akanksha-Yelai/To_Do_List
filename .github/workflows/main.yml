@@ -30,15 +30,3 @@ jobs:
       # Step 4: Build the Go application
       - name: Build Go application
         run: go build -o todo-app .
-
-      # Step 5: Run the Go application with environment variables
-      - name: Run Go application
-        env:
-          DB_HOST: http://localhost:8080
-          DB_PORT: 5432
-          DB_USER: postgres
-          DB_NAME: 'mydatabase'
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: |
-          go run main.go
-          echo "Running the Go application..."
