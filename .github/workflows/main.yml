@@ -34,7 +34,7 @@ jobs:
       # Step 5: Run the Go application with environment variables
       - name: Run Go application
         env:
-          DB_HOST: 'localhost'
+          DB_HOST: http://localhost:8080
           DB_PORT: 5432
           DB_USER: postgres
           DB_NAME: 'mydatabase'
