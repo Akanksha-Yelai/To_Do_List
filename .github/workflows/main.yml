@@ -27,29 +27,16 @@ jobs:
       - name: Install Go dependencies
         run: go mod tidy
 
-      # Step 6: Build the Go application
+      # Step 4: Build the Go application
       - name: Build Go application
         run: go build -o todo-app .
 
-      # Step 4: Set Environment Variables
-      - name: Set environment variables
+      # Step 5: Run the Go application with environment variables
+      - name: Run Go application
+        env:
+          DB_HOST: 'localhost'
+          DB_NAME: 'mydatabase'
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          IFS=';' read -r -a array <<< "${{ secrets.TODO_LIST_POSTGRESQL_ENV }}"
-          for item in "${array[@]}"; do
-            # Split each item into a key and value
-            key="${item%%=*}"
-            value="${item#*=}"
-            # Export as an environment variable
-            export "$key=$value"
-          done
-
-      # Step 7: Run the Go application (optional for local testing)
-        - name: Run Go application
-          env:
-            DB_HOST: ${{ secrets.DB_HOST }}
-            DB_USER: ${{ secrets.DB_USER }}
-            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-            DB_NAME: ${{ secrets.DB_NAME }}
-          run: |
-            go run main.go
-            echo "Running the Go application..."
+          go run main.go
+          echo "Running the Go application..."
