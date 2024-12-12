@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-list-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo_list
+  template:
+    metadata:
+      labels:
+        app: todo_list
+    spec:
+      containers:
+      - name: todo-list-container
+        image: akankshayelai/todo_list:latest1
+        ports:
+        - containerPort: 8080
